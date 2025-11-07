@@ -1,18 +1,15 @@
-version: "3.9"
-
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: my_postgres
-    restart: always
+  psql_bp:
+    image: postgres:latest
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_DB: ${BLUEPRINT_DB_DATABASE}
+      POSTGRES_USER: ${BLUEPRINT_DB_USERNAME}
+      POSTGRES_PASSWORD: ${BLUEPRINT_DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${BLUEPRINT_DB_PORT}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - psql_volume_bp:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  psql_volume_bp:
