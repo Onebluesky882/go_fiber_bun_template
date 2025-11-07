@@ -9,10 +9,22 @@ import (
 	"strconv"
 	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
-	_ "github.com/joho/godotenv/autoload"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
+/*
+ interface ใน Go คืออะไร?
+
+interface ใน Go คือ “สัญญา” (contract)
+ที่บอกว่า object ไหนก็ตามที่มี method เหมือนกัน
+จะถือว่า “implement” interface นั้นโดยอัตโนมัติ ✅
+
+ไม่มี implements keyword เหมือน Java / C#
+Go ตรวจสอบจาก method set เองเลย
+
+*/
 // Service represents a service that interacts with a database.
 type Service interface {
 	// Health returns a map of health status information.
@@ -22,10 +34,12 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
+
+	GetDB() *bun.DB
 }
 
 type service struct {
-	db *sql.DB
+	db *bun.DB
 }
 
 var (
@@ -44,10 +58,11 @@ func New() Service {
 		return dbInstance
 	}
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&search_path=%s", username, password, host, port, database, schema)
-	db, err := sql.Open("pgx", connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
+
+	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(connStr)))
+
+	db := bun.NewDB(sqldb, pgdialect.New())
+
 	dbInstance = &service{
 		db: db,
 	}
@@ -112,4 +127,8 @@ func (s *service) Health() map[string]string {
 func (s *service) Close() error {
 	log.Printf("Disconnected from database: %s", database)
 	return s.db.Close()
+}
+
+func (s *service) GetDB() *bun.DB {
+	return s.db
 }

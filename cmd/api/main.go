@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"go-fiber-bun/internal/server"
 	"log"
 	"os"
 	"os/signal"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/onebluesky882/go_fiber_bun_template/internal/server"
 )
 
 func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
@@ -40,7 +40,6 @@ func gracefulShutdown(fiberServer *server.FiberServer, done chan bool) {
 }
 
 func main() {
-
 	server := server.New()
 
 	server.RegisterFiberRoutes()

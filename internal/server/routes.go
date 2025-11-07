@@ -3,6 +3,7 @@ package server
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/onebluesky882/go_fiber_bun_template/internal/user"
 )
 
 func (s *FiberServer) RegisterFiberRoutes() {
@@ -19,6 +20,9 @@ func (s *FiberServer) RegisterFiberRoutes() {
 
 	s.App.Get("/health", s.healthHandler)
 
+	// --- User Routes ---
+	userGroup := s.App.Group("/user")
+	user.RegisterRoutes(userGroup, s.db.GetDB())
 }
 
 func (s *FiberServer) HelloWorldHandler(c *fiber.Ctx) error {

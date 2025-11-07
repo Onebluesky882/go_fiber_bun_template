@@ -2,8 +2,7 @@ package server
 
 import (
 	"github.com/gofiber/fiber/v2"
-
-	"go-fiber-bun/internal/database"
+	"github.com/onebluesky882/go_fiber_bun_template/internal/database"
 )
 
 type FiberServer struct {

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Go_fiber_bun_template",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
