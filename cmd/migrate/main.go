@@ -23,9 +23,6 @@ func main() {
 	// เปิด debug log สำหรับ SQL
 	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 
-	// ✅ สร้าง SQL ไฟล์อัตโนมัติ
-	// generateSQL(db)
-
 	// ✅ สร้างตารางจริงใน DB
 	createAllTables(ctx, db)
 
