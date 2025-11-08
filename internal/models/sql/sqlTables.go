@@ -13,7 +13,7 @@ var AllModels = []any{
 
 // table : users
 type User struct {
-	bun.BaseModel `bun:"table:user"`
+	bun.BaseModel `bun:"table:users"`
 
 	ID   int64  `bun:",pk,autoincrement"`
 	Name string `bun:",notnull"`

@@ -22,7 +22,7 @@ func NewRepository(db *bun.DB) *Repository {
 }
 
 func (r *Repository) GetAll(ctx context.Context) ([]User, error) {
-	var users []User
-	err := r.db.NewSelect().Model(&users).Scan(ctx)
-	return users, err
+	var user []User
+	err := r.db.NewSelect().Model(&user).Scan(ctx)
+	return user, err
 }
