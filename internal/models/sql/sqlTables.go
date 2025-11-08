@@ -1,4 +1,4 @@
-package models
+package sql
 
 import "github.com/uptrace/bun"
 
@@ -15,9 +15,8 @@ var AllModels = []any{
 type User struct {
 	bun.BaseModel `bun:"table:user"`
 
-	ID       int64      `bun:",pk,autoincrement"`
-	Name     string     `bun:",notnull"`
-	Comments []*Comment `bun:"rel:has-many,join:id=user_id"`
+	ID   int64  `bun:",pk,autoincrement"`
+	Name string `bun:",notnull"`
 }
 
 type Comment struct {

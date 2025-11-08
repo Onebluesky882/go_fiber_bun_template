@@ -9,7 +9,7 @@ import (
 
 	"github.com/onebluesky882/go_fiber_bun_template/internal/database"
 	"github.com/onebluesky882/go_fiber_bun_template/internal/migration"
-	"github.com/onebluesky882/go_fiber_bun_template/internal/models"
+	sql "github.com/onebluesky882/go_fiber_bun_template/internal/models/sql"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/extra/bundebug"
 	"github.com/uptrace/bun/migrate"
@@ -44,7 +44,7 @@ func main() {
 
 // Dynamic table creation
 func createAllTables(ctx context.Context, db *bun.DB) {
-	for _, model := range models.AllModels {
+	for _, model := range sql.AllModels {
 		if _, err := db.NewCreateTable().Model(model).IfNotExists().Exec(ctx); err != nil {
 			log.Fatalf("❌ Create table failed: %v", err)
 		}

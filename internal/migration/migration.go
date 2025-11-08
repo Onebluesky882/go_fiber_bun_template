@@ -3,7 +3,7 @@ package migration
 import (
 	"context"
 
-	"github.com/onebluesky882/go_fiber_bun_template/internal/models"
+	models "github.com/onebluesky882/go_fiber_bun_template/internal/models/sql"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/migrate"
 )
