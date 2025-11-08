@@ -2,6 +2,7 @@ package models
 
 import "github.com/uptrace/bun"
 
+// All Models
 var AllModels = []any{
 	(*User)(nil),
 	(*Comment)(nil),
@@ -10,8 +11,9 @@ var AllModels = []any{
 	(*Car)(nil),
 }
 
+// table : users
 type User struct {
-	bun.BaseModel `bun:"table:users"`
+	bun.BaseModel `bun:"table:user"`
 
 	ID       int64      `bun:",pk,autoincrement"`
 	Name     string     `bun:",notnull"`

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/onebluesky882/go_fiber_bun_template/internal/database"
@@ -147,25 +146,4 @@ func newMigrationCmd(m *migrate.Migrator) *cli.Command {
 			},
 		},
 	}
-}
-
-// generate .up.sql และ .down.sql อัตโนมัติ
-func getTableName(m any) string {
-	t := reflect.TypeOf(m)
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-
-	tableName := t.Name() // fallback
-
-	if baseField, ok := t.FieldByName("BaseModel"); ok {
-		tag := baseField.Tag.Get("bun")
-		for _, part := range strings.Split(tag, ",") {
-			if strings.HasPrefix(part, "table:") {
-				tableName = part[len("table:"):]
-			}
-		}
-	}
-
-	return tableName
 }
