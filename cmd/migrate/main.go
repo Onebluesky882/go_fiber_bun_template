@@ -1,32 +1,43 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/onebluesky882/go_fiber_bun_template/internal/database"
 	"github.com/onebluesky882/go_fiber_bun_template/internal/migration"
+	"github.com/onebluesky882/go_fiber_bun_template/internal/models"
+	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/extra/bundebug"
 	"github.com/uptrace/bun/migrate"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	dbService := database.New()
-	db := dbService.GetDB()
+	ctx := context.Background()
+	db := database.New().GetDB()
 
-	// เปิด bundebug เพื่อ log SQL
+	// เปิด debug log สำหรับ SQL
 	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+
+	// ✅ สร้าง SQL ไฟล์อัตโนมัติ
+	// generateSQL(db)
+
+	// ✅ สร้างตารางจริงใน DB
+	createAllTables(ctx, db)
+
+	// ✅ CLI app สำหรับ migrations
+	m := migrate.NewMigrator(db, migration.New(), migrate.WithMarkAppliedOnSuccess(true))
 
 	app := &cli.App{
 		Name:  "migrate",
 		Usage: "database migrations",
 		Commands: []*cli.Command{
-			newMigrationCmd(
-				migrate.NewMigrator(db, migration.New(), migrate.WithMarkAppliedOnSuccess(true)),
-			),
+			newMigrationCmd(m),
 		},
 	}
 
@@ -35,6 +46,17 @@ func main() {
 	}
 }
 
+// Dynamic table creation
+func createAllTables(ctx context.Context, db *bun.DB) {
+	for _, model := range models.AllModels {
+		if _, err := db.NewCreateTable().Model(model).IfNotExists().Exec(ctx); err != nil {
+			log.Fatalf("❌ Create table failed: %v", err)
+		}
+	}
+	fmt.Println("✅ All tables created successfully.")
+}
+
+// CLI command
 func newMigrationCmd(m *migrate.Migrator) *cli.Command {
 	return &cli.Command{
 		Name:  "migrate",
@@ -43,20 +65,20 @@ func newMigrationCmd(m *migrate.Migrator) *cli.Command {
 			{
 				Name:  "init",
 				Usage: "create migrations table",
-				Action: func(ctx *cli.Context) error {
-					return m.Init(ctx.Context)
+				Action: func(c *cli.Context) error {
+					return m.Init(c.Context)
 				},
 			},
 			{
 				Name:  "up",
 				Usage: "run up migrations",
-				Action: func(ctx *cli.Context) error {
-					if err := m.Lock(ctx.Context); err != nil {
+				Action: func(c *cli.Context) error {
+					if err := m.Lock(c.Context); err != nil {
 						return err
 					}
-					defer m.Unlock(ctx.Context)
+					defer m.Unlock(c.Context)
 
-					group, err := m.Migrate(ctx.Context)
+					group, err := m.Migrate(c.Context)
 					if err != nil {
 						return err
 					}
@@ -71,13 +93,13 @@ func newMigrationCmd(m *migrate.Migrator) *cli.Command {
 			{
 				Name:  "down",
 				Usage: "rollback last migration group",
-				Action: func(ctx *cli.Context) error {
-					if err := m.Lock(ctx.Context); err != nil {
+				Action: func(c *cli.Context) error {
+					if err := m.Lock(c.Context); err != nil {
 						return err
 					}
-					defer m.Unlock(ctx.Context)
+					defer m.Unlock(c.Context)
 
-					group, err := m.Rollback(ctx.Context)
+					group, err := m.Rollback(c.Context)
 					if err != nil {
 						return err
 					}
@@ -92,13 +114,13 @@ func newMigrationCmd(m *migrate.Migrator) *cli.Command {
 			{
 				Name:  "create",
 				Usage: "create up and down SQL migrations",
-				Action: func(ctx *cli.Context) error {
-					name := strings.Join(ctx.Args().Slice(), "_")
+				Action: func(c *cli.Context) error {
+					name := strings.Join(c.Args().Slice(), "_")
 					if name == "" {
 						return fmt.Errorf("please provide a migration name")
 					}
 
-					files, err := m.CreateTxSQLMigrations(ctx.Context, name)
+					files, err := m.CreateTxSQLMigrations(c.Context, name)
 					if err != nil {
 						return err
 					}
@@ -112,8 +134,8 @@ func newMigrationCmd(m *migrate.Migrator) *cli.Command {
 			{
 				Name:  "status",
 				Usage: "print migration status",
-				Action: func(ctx *cli.Context) error {
-					ms, err := m.MigrationsWithStatus(ctx.Context)
+				Action: func(c *cli.Context) error {
+					ms, err := m.MigrationsWithStatus(c.Context)
 					if err != nil {
 						return err
 					}
@@ -125,4 +147,25 @@ func newMigrationCmd(m *migrate.Migrator) *cli.Command {
 			},
 		},
 	}
+}
+
+// generate .up.sql และ .down.sql อัตโนมัติ
+func getTableName(m any) string {
+	t := reflect.TypeOf(m)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	tableName := t.Name() // fallback
+
+	if baseField, ok := t.FieldByName("BaseModel"); ok {
+		tag := baseField.Tag.Get("bun")
+		for _, part := range strings.Split(tag, ",") {
+			if strings.HasPrefix(part, "table:") {
+				tableName = part[len("table:"):]
+			}
+		}
+	}
+
+	return tableName
 }
