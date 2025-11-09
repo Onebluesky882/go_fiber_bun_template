@@ -62,3 +62,10 @@ watch:
         fi
 
 .PHONY: all build run test clean watch docker-run docker-down itest
+
+
+## Run the generate command
+## for ex. go: generate mockgen -source=handler.go -destination=mocks/handler.go -package=mockshandler
+## run command : make generate ./... 
+generate::
+	go generate ./...
