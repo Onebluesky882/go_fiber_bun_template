@@ -26,3 +26,9 @@ func (r *Repository) GetAll(ctx context.Context) ([]User, error) {
 	err := r.db.NewSelect().Model(&user).Scan(ctx)
 	return user, err
 }
+
+func (r *Repository) GetUserById(ctx context.Context, id int) (User, error) {
+	var user User
+	err := r.db.NewSelect().Model(&user).Where("id = ?", id).Scan(ctx)
+	return user, err
+}

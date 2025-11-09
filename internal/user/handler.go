@@ -26,3 +26,7 @@ func (h *Handler) GetAllUsers(c *fiber.Ctx) error {
 		"data":   users,
 	})
 }
+
+func (h *Handler) GetUser(c *fiber.Ctx) error {
+	return nil
+}

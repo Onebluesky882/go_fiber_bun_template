@@ -13,3 +13,7 @@ func NewService(repo *Repository) *Service {
 func (s *Service) GetAllUsers(ctx context.Context) ([]User, error) {
 	return s.repo.GetAll(ctx)
 }
+
+func (s *Service) GetUser(ctx context.Context, id int) (User, error) {
+	return s.repo.GetUserById(ctx, id)
+}
